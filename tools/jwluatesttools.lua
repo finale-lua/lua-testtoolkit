@@ -18,6 +18,7 @@ LuaVersion_ = tonumber(string.match(_VERSION, "%d+%.%d+"))
 local luavers_string = finenv.LuaReleaseVersion or _VERSION
 
 local osutils = require("luaosutils")
+local lfs = require("lfs")
 
 print(luavers_string.." ("..tostring(LuaVersion_)..")")
 print(finenv.LuaBridgeVersion or "LuaBridge Version Unknown")
@@ -1079,5 +1080,48 @@ function CreateMusicRegion(startmeas, startstaff, startpos, endmeas, endstaff, e
     region.EndMeasurePos = endpos
     return region
 end
+
+function CopyFileToScratch(source_path)
+    local base_dir = GetRunningFolderPath()
+    local scratch_dir = base_dir .. "/scratch"
+
+    local filename = tostring(source_path):match("([^/\\]+)$")
+    if not AssureNonNil(filename, "Invalid source path: " .. tostring(source_path)) then
+        return nil
+    end
+
+    local scratch_path = scratch_dir .. "/" .. filename
+
+    -- ensure ./scratch exists
+    local attr = lfs.attributes(scratch_dir)
+    if not attr then
+        if not AssureNonNil(lfs.mkdir(scratch_dir), "unable to create scratch directory") then
+            return nil
+        end
+    elseif not AssureEqual(attr.mode, "directory", scratch_dir .. " exists but is not a directory") then
+        return nil
+    end
+
+    -- capture source mtime before copy
+    local src_attr = assert(lfs.attributes(source_path))
+    local mtime = src_attr.modification
+
+    -- copy file (binary-safe)
+    local in_f  = assert(io.open(source_path, "rb"))
+    local out_f = assert(io.open(scratch_path, "wb"))
+
+    for chunk in function() return in_f:read(8192) end do
+        out_f:write(chunk)
+    end
+
+    in_f:close()
+    out_f:close()
+
+    -- preserve modification time
+    lfs.touch(scratch_path, mtime)
+
+    return scratch_path
+end
+
 
 

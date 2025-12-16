@@ -1,3 +1,5 @@
+local lfs = require("lfs")
+
 function FCLuaIterator_ValueTests_Note2_1_271_2(note)
    BoolValuePropertyTest(note, "FCNote", "Accidental", false)
    BoolValuePropertyTest(note, "FCNote", "AccidentalFreeze", false)
@@ -87,3 +89,24 @@ count = iterator:ForEachInteger(10, 1, function(value)
     end)
 AssureTrue(got1, "FCLuaIterator ForEachInteger value processed.") 
 AssureEqual(count, 4, "FCLuaIterator ForEachInteger processed "..count.." values.")
+
+local source_file = GetRunningFolderPath() .. "/tools/scratch.musx"
+local scratch_file = CopyFileToScratch(source_file)
+local filename = finale.FCStrings()
+filename:AddCopy(finale.FCString(scratch_file))
+got1 = false
+count = iterator:ForEachFileSaved(filename, function(doc, filename)
+        if not AssureNonNil(doc, "Finale document not provided for FCLuaIterator.ForEachFileSaved") then
+            return
+        end
+        local path = filename.LuaString
+        local base = tostring(path):match("([^/\\]+)$")
+        if not AssureEqual(base, "scratch.musx", "Expected scratch.musx, got: " .. tostring(base)) then
+            return false
+        end
+        got1 = true
+        return true
+    end)
+AssureTrue(got1, "FCLuaIterator ForEachFileSaved value processed.") 
+AssureEqual(count, 1, "FCLuaIterator ForEachFileSaved processed "..count.." values.")
+
