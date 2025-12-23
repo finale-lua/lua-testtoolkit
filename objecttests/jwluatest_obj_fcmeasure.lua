@@ -18,9 +18,9 @@ end
 
 function FCKeySignature_ValueTests_ItemNo1(key_sig)
    NumberValuePropertyTest_RO(key_sig, "FCKeySignature", "Alteration", 0)
-   NumberValuePropertyTest_RO(key_sig, "FCKeySignature", "ID", 0)
+   NumberValuePropertyTest(key_sig, "FCKeySignature", "ID", 0, 2)
    NumberValuePropertyTest_RO(key_sig, "FCKeySignature", "IDWithTransposition", 0)
-   NumberValuePropertyTest(key_sig, "FCKeySignature", "TransposeAlteration", 0)
+   NumberValuePropertyTest(key_sig, "FCKeySignature", "TransposeAlteration", 0, -2)
    BoolValuePropertyTest(key_sig, "FCKeySignature", "TransposeSimplify", false)
 end
 

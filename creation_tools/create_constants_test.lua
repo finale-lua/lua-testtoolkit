@@ -9,7 +9,7 @@ function plugindef()
    return "Create Finale Lua Constants Test", "Create constants test", "Creates a test for the constants available to Finale Lua."
 end
 
-local pattern = "STAFFSTEMDIR_" -- edit as needed in RGP Lua
+local pattern = "EXPRPLAYSTART_" -- edit as needed in RGP Lua
 local namespace = "finale"
 
 local get_finale_propget = function()
