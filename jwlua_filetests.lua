@@ -67,6 +67,7 @@ require("objecttests/jwluatest_obj_fcpartscopeprefs")
 require("objecttests/jwluatest_obj_fcpartstaffvoicing")
 require("objecttests/jwluatest_obj_fcpianobraceprefs")
 require("objecttests/jwluatest_obj_fcplaybackprefs")
+require("objecttests/jwluatest_obj_fcrawdata")
 require("objecttests/jwluatest_obj_fcrepeatprefs")
 require("objecttests/jwluatest_obj_fcseparatemeasurenumber")
 require("objecttests/jwluatest_obj_fcseparateplacement")
@@ -94,4 +95,3 @@ require("objecttests/jwluatest_obj_scenarios")
 
 -- Output the results from the tests:
 PrintTestResult()
-
