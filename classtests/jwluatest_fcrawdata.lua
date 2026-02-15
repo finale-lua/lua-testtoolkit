@@ -2,6 +2,17 @@ if not AssureNonNil(finale.FCRawData, "This version of the Lua plugin lacks FCRa
     return
 end
 
+local function get_first_system_staff()
+    local system_staves = finale.FCSystemStaves()
+    if not AssureTrue(system_staves:LoadAllForItem(0) > 0, "FCSystemStaves:LoadAllForItem(0) for FCRawData payload tests") then
+        return nil
+    end
+    for ss in each(system_staves) do
+        return ss
+    end
+    return nil
+end
+
 function FCRawData_PropertyTests(obj)
     local savefunction = function(_) return true end
     local fullsavefunction = function(o) return o:Save() end
@@ -21,10 +32,10 @@ function FCRawData_PropertyTests(obj)
     end
     PropertyTest(obj, "FCRawData", "FourByteTable")
 
-    -- Use a real existing target for full payload save+reload tests.
-    local exprdef = finale.FCTextExpressionDef()
-    if AssureTrue(exprdef:Load(1), "FCTextExpressionDef:Load(1) for FCRawData payload tests")
-            and AssureTrue(obj:AssignTarget(exprdef), "FCRawData:AssignTarget for payload tests")
+    -- Use an existing FCSystemStaff (inci-based other) for payload save+reload tests.
+    local system_staff = get_first_system_staff()
+    if system_staff
+            and AssureTrue(obj:AssignTarget(system_staff), "FCRawData:AssignTarget for payload tests")
             and AssureTrue(obj:Load(), "FCRawData:Load for payload tests") then
         local function clone_array(source)
             local result = {}

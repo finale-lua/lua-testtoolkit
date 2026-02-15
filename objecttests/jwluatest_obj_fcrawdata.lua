@@ -108,13 +108,26 @@ function FCRawData_ValueTests_FourByteHelpers(obj)
     AssureEqual(obj:GetFourByte(17), 0, "FCRawData:GetFourByte returns 0 for out-of-range offset")
 end
 
+local function get_first_system_staff()
+    local system_staves = finale.FCSystemStaves()
+    if not AssureTrue(system_staves:LoadAllForItem(0) > 0, "FCSystemStaves:LoadAllForItem(0) for FCRawData tests") then
+        return nil
+    end
+    for ss in each(system_staves) do
+        return ss
+    end
+    return nil
+end
+
 function FCRawData_ValueTests_AssignAndIO(obj)
-    local exprdef = finale.FCTextExpressionDef()
-    AssureTrue(exprdef:Load(1), "FCTextExpressionDef:Load(1) for FCRawData.AssignTarget")
-    AssureTrue(obj:AssignTarget(exprdef), "FCRawData:AssignTarget")
+    local system_staff = get_first_system_staff()
+    if not system_staff then
+        return
+    end
+    AssureTrue(obj:AssignTarget(system_staff), "FCRawData:AssignTarget from FCSystemStaff")
     AssureTrue(obj.Tag ~= 0, "FCRawData.Tag is non-zero after AssignTarget")
 
-    AssureTrue(obj:Load(), "FCRawData:Load from FCTextExpressionDef target")
+    AssureTrue(obj:Load(), "FCRawData:Load from FCSystemStaff target")
     AssureTrue(obj.ByteCount > 0, "FCRawData loaded byte count > 0")
 
     local loaded_bytes = obj.ByteTable
@@ -136,26 +149,31 @@ function FCRawData_ValueTests_AssignAndIO(obj)
 end
 
 function FCBaseData_ValueTests_RawProperties()
-    local exprdef = finale.FCTextExpressionDef()
-    AssureTrue(exprdef:Load(1), "FCTextExpressionDef:Load(1) for __FCBaseData raw properties")
+    local system_staff = get_first_system_staff()
+    if not AssureNonNil(system_staff, "FCSystemStaff available for __FCBaseData raw properties") then
+        return
+    end
 
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawTag")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawOtherCmper")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawOtherInci")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawDetailCmper1")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawDetailCmper2")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawDetailInci")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawEntryDetailEntryNumber")
-    PropertyTest_RO(exprdef, "FCTextExpressionDef", "RawEntryDetailInci")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawTag")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawOtherCmper")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawOtherInci")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawDetailCmper1")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawDetailCmper2")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawDetailInci")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawEntryDetailEntryNumber")
+    PropertyTest_RO(system_staff, "FCSystemStaff", "RawEntryDetailInci")
 
-    local raw = finale.FCRawData()
-    AssureTrue(raw:AssignTarget(exprdef), "FCRawData:AssignTarget for __FCBaseData raw property compare")
-    AssureEqual(exprdef.RawTag, raw.Tag, "__FCBaseData.RawTag value")
-    AssureEqual(exprdef.RawOtherCmper, raw.OtherCmper, "__FCBaseData.RawOtherCmper value")
-    AssureEqual(exprdef.RawOtherInci, raw.OtherInci, "__FCBaseData.RawOtherInci value")
-    AssureEqual(exprdef.RawDetailCmper1, raw.DetailCmper1, "__FCBaseData.RawDetailCmper1 value")
-    AssureEqual(exprdef.RawDetailCmper2, raw.DetailCmper2, "__FCBaseData.RawDetailCmper2 value")
-    AssureEqual(exprdef.RawDetailInci, raw.DetailInci, "__FCBaseData.RawDetailInci value")
+    local raw_target = finale.FCRawData()
+    AssureTrue(raw_target:AssignTarget(system_staff), "FCRawData:AssignTarget(FCSystemStaff) for RawTag compare")
+    AssureEqual(system_staff.RawTag, raw_target.Tag, "__FCBaseData.RawTag matches AssignTarget tag from FCSystemStaff")
+    AssureEqual(system_staff.RawOtherCmper, system_staff.ItemCmper, "__FCBaseData.RawOtherCmper equals FCSystemStaff.ItemCmper")
+    AssureEqual(system_staff.RawOtherInci, system_staff.ItemInci, "__FCBaseData.RawOtherInci equals FCSystemStaff.ItemInci")
+    AssureEqual(system_staff.RawDetailCmper1, system_staff.ItemCmper, "__FCBaseData.RawDetailCmper1 equals FCSystemStaff.ItemCmper")
+    AssureEqual(system_staff.RawDetailCmper2, system_staff.ItemInci, "__FCBaseData.RawDetailCmper2 equals FCSystemStaff.ItemInci")
+
+    local packed_u32 = bit32.bor(bit32.band(system_staff.ItemCmper, 0xFFFF), bit32.lshift(bit32.band(system_staff.ItemInci, 0xFFFF), 16))
+    AssureEqual(bit32.band(system_staff.RawEntryDetailEntryNumber, 0xFFFFFFFF), packed_u32, "__FCBaseData.RawEntryDetailEntryNumber packed from FCSystemStaff cmper/inci")
+    AssureEqual(system_staff.RawDetailInci, system_staff.RawEntryDetailInci, "__FCBaseData detail/entry-detail inci shared storage")
 end
 
 -- Call:
